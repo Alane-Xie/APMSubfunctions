@@ -1,0 +1,67 @@
+function BorderSquares = BackgroundSquares(Display, Stim, Square)
+
+%======================== BackgroundSquares.m =============================
+% Creates a background texture the size of the screen (specified by input
+% structure 'Display') with black and white squares randomly dotted around
+% an outer border.  This texture aids stable vergence during binocular
+% viewing. 'Stim.Window' specifies the rectangle in which stimuli will be
+% presented.
+%
+% INPUTS:
+%       Square.Density      proportion of the square area to fill with squares
+%       Square.InnerBorder  size of border between surrounding squares and stimulus (pixels)
+%       Square.Size         dimensions of each square (pixels)
+%       Square.Filled       0 = outline; 1 = solid
+
+%
+% REVISIONS:
+% 29/09/2010 - Created by Aidan Murphy (apm909@bham.ac.uk)
+% 23/10/2012 - Updated for displays with anisotropic pixel dimensions
+%     ___  ______  __   __
+%    /   ||  __  \|  \ |  \    APM SUBFUNCTIONS
+%   / /| || |__/ /|   \|   \   Aidan P. Murphy - apm909@bham.ac.uk
+%  / __  ||  ___/ | |\   |\ \  Binocular Vision Lab
+% /_/  |_||_|     |_| \__| \_\ University of Birmingham
+%==========================================================================
+
+if nargin < 3                                                   % Use the following as defaults:
+    Square.Density = 0.7;                                       % set the density of squares in the border
+    Square.InnerBorder = 3*Display.Pixels_per_deg;              % set the size of the inner border between the surrounding squares and the stimulus (degrees)
+    Square.Size = 0.5*Display.Pixels_per_deg;                 	% set the size of the surrounding squares (degrees^2)
+    Square.Filled = 0;
+end
+
+SquaresPerHalf = floor(((Display.Rect([3,4])-Square.Size)/2)./(Square.Size*2));
+OuterBorders = ((Display.Rect([3,4])-Square.Size)/2)-(SquaresPerHalf.*Square.Size*2);
+SquaresPerSide = (SquaresPerHalf*2)+1;                                              	
+SquareCornersX = (OuterBorders(1):(Square.Size(1)*2):floor(SquaresPerSide(1))*(Square.Size(1)*2));
+SquareCornersY = (OuterBorders(2):(Square.Size(2)*2):floor(SquaresPerSide(2))*(Square.Size(2)*2));
+if numel(Stim.Window)== 2
+    Stim.Window = [0 0 Stim.Window];
+end
+NoSquareRect = ([0 0 Square.InnerBorder]*2) + Stim.Window;      % Size of rectangle with no border texture in
+ZeroRect = CenterRect(NoSquareRect, Display.Rect);              % Centred position of rectange with no border texture in
+BorderRectCorners = nan(4,1);
+Squares = 1;
+for x = 1:numel(SquareCornersX)
+    for y = 1:numel(SquareCornersY)
+        if ~IsInRect(SquareCornersX(x),SquareCornersY(y),ZeroRect)
+            BorderRectCorners(:,Squares) = [SquareCornersX(x); SquareCornersY(y); SquareCornersX(x)+Square.Size(1); SquareCornersY(y)+Square.Size(2)];
+            Squares = Squares+1;
+        end
+    end
+end
+TotalSquares = (round(numel(BorderRectCorners(1,:))*Square.Density));
+AllSquares = randperm(numel(BorderRectCorners(1,:)));
+SquareRects = BorderRectCorners(:,AllSquares(:,1:TotalSquares));
+SquareCol = (randi(2, [TotalSquares,1])-1)*255; 
+SquareColors = [SquareCol SquareCol SquareCol]';
+
+%================= Create texture and Draw border squares =================
+BorderSquares = Screen('MakeTexture', Display.win, ones(Display.Rect(4), Display.Rect(3))*Stim.Background(1));
+if Square.Filled == 1                                               
+    Screen('FillRect', BorderSquares, SquareColors, SquareRects); 
+elseif Square.Filled == 0
+    LineWidth = 3;
+    Screen('FrameRect', BorderSquares, SquareColors, SquareRects, LineWidth); 
+end

@@ -1,0 +1,32 @@
+function Drive = FindDrive(Targetfile)
+
+%============================ FindDrive.m =================================
+% This function will locate which currently connected disk drive contains
+% the file specified by the input string Targetfile. Target file need not
+% be the complete file name. For portable disk drives where the drive name
+% will change depending on the PC, this function can be used to identify
+% the relevant drive by saving a unique identifier file to the root 
+% directory of the drive, e.g. 'apm909_USB.txt'.
+%
+%
+%==========================================================================
+
+Drive = [];
+if IsWin
+	import java.io.*;
+	f=File('');
+	r=f.listRoots;
+    for i=1:numel(r)
+         AllDrives{i} = sprintf('%s',char(r(i)));
+    end
+    Content{i} = dir(AllDrives{i});
+    for Folder = 1:numel(Content{i})
+        if ~isempty(strfind(Content{i}(Folder).name, Targetfile))
+            Drive = AllDrives{i};
+            return;
+        end
+    end
+    fprintf('ERROR: Search completed but file ''%s'' was not located!\n', Targetfile);
+else
+    fprintf('ERROR: This function only works on Windows operating systems!\n');
+end

@@ -1,0 +1,136 @@
+function Movie = PlayMovie2(MovieDuration, MovieDir, MovieDims, MovieEye)
+
+%============================== PlayMovie.m ===============================
+% Randomly selects a movie from the specified directory 'MovieDir', and plays
+% a continuous clip lasting for the duration specified by 'MovieDuration' 
+% (seconds), beginning from a random starting point.
+%
+% INPUTS:
+%   MovieDuration:  duration of playback (seconds). 0 = play full movie.
+%   MovieDir:       directory containing movie files (.avi/.mov/.mp4)
+%   MovieDims:      movie dimensions [width, height] (degrees) 
+%   MovieEye:   	which eye to present to when in stereo (0=L; 1=R; 2=both)
+%
+% REQUIREMENTS:
+%   APMsubfunctions directory
+%   Movie directory
+%
+% REVISIONS:
+% 11/14/2012 - Written.
+%     ___  ______  __   __
+%    /   ||  __  \|  \ |  \    APM SUBFUNCTIONS
+%   / /| || |__/ /|   \|   \   Aidan P. Murphy - murphyap@mail.nih.gov
+%  / __  ||  ___/ | |\   |\ \  Section on Cognitive Neurophysiology and Imaging
+% /_/  |_||_|     |_| \__| \_\ NIMH
+%==========================================================================
+Movie.Show3D = 1;
+
+%====================== Set default parameters
+if nargin < 1, MovieDuration = 0; end                               % Playback duration defaults to full movie
+if nargin < 2                                                       % Default movie directories
+    if IsWin
+        MovieDir = 'C:\Documents and Settings\lab\Desktop\Movies';          
+        Stereo = 1;
+        if Movie.Show3D == 1
+            MovieDir = fullfile(MovieDir, '3DMovies');
+        end
+    elseif ismac
+        MovieDir = '/Volumes/APM909_B/MonkeyThieves_Series1';
+        Stereo = 0;
+    %     Screen('Preference', 'OverrideMultimediaEngine', 1);        % Use GStreamer instead of Quicktime
+    %     Screen('Preference', 'DefaultVideocaptureEngine', 3);
+    end
+end
+if nargin < 3, MovieDims = [30 50]; end                             % Movie dimensions default to fullscreen
+if nargin < 4, MovieEye = 2; end                                    % Movie presentation defaults to binocular
+Movie.WidthDeg = MovieDims(1);                                      % Specify movie width (deg)
+Movie.MaintainAR = 1;                                               
+Movie.FullScreen = 1;
+
+
+try
+    %====================== Open PTB window
+    Display = DisplaySettings(Stereo);
+    Display.Background = [0 0 0];
+    Display.Imagingmode = [];                       
+    HideCursor;
+    KbName('UnifyKeyNames');
+    Screen('Preference', 'VisualDebugLevel', 1);                        
+    [Display.win, Display.Rect] = Screen('OpenWindow', Display.ScreenID, Display.Background,[],[],[], Display.Stereomode, [], Display.Imagingmode);
+
+    %====================== Open movie file
+    MacaqueMovies = dir(MovieDir);
+    MovieNumber = randi(numel(MacaqueMovies)-2)+2;
+    movieFile = fullfile(MovieDir, MacaqueMovies(MovieNumber).name);
+    movieFile
+	[mov, Movie.TotalDuration, Movie.fps, Movie.width, Movie.height, Movie.count, Movie.AR]= Screen('OpenMovie', Display.win, movieFile);
+    Movie.SourceRect{2} = [0 0 Movie.width, Movie.height];
+    if MovieDuration == 0
+        StartTime = 1;
+        MovieDuration = Movie.TotalDuration;
+    elseif MovieDuration > 0
+        StartTime = randi(Movie.TotalDuration-MovieDuration);
+    end
+    Screen('PlayMovie',mov,1);
+    Screen('SetmovieTimeIndex',mov,StartTime,1); 
+    
+    if Movie.MaintainAR == 0
+        if Movie.FullScreen == 1
+            Movie.DestRect = Display.Rect;
+        elseif Movie.FullScreen == 0
+            Movie.DestRect = [0 0 MovieDims]*Display.Pixels_per_deg(1);
+        end
+    elseif Movie.MaintainAR == 1
+        if Movie.FullScreen == 1
+            Movie.WidthDeg = Display.Rect(3);
+        else
+            Movie.WidthDeg = MovieDims(1)*Display.Pixels_per_deg(1);
+        end
+        Movie.DestRect = (Movie.SourceRect{2}/Movie.width)*Movie.WidthDeg;
+    end
+    if ~isempty(find(Movie.DestRect > Display.Rect))
+        Movie.DestRect = Movie.DestRect*min(Display.Rect([3, 4])./Movie.Rect([3, 4]));
+        fprintf('Requested movie size > screen size! Defaulting to maximum size.\n');
+    end
+    Movie.DestRect = CenterRect(Movie.DestRect, Display.Rect);
+    if Movie.Show3D == 1
+        if 
+        Movie.SourceRect{2} = Movie.SourceRect{2}./[1 1 2 1];
+        Movie.SourceRect{1} = Movie.SourceRect{2}+[Movie.SourceRect{2}(3),0, Movie.SourceRect{2}(3),0];
+    else
+        Movie.SourceRect{1} = Movie.SourceRect{2};
+    end
+    
+    %===================== Play movie
+    FrameOnset = GetSecs;
+    EndMovie = 0;
+    while EndMovie == 0
+        MovieTex = Screen('GetMovieImage', Display.win, mov, 1);
+        for Eye = 1:2
+            currentbuffer = Screen('SelectStereoDrawBuffer', Display.win, Eye-1);
+            Screen('DrawTexture', Display.win, MovieTex, Movie.SourceRect{Eye}, Movie.DestRect);
+        end
+    	[VBL FrameOnset(end+1)] = Screen('Flip', Display.win);
+        Screen('Close', MovieTex);
+        [keyIsDown,secs,keyCode] = KbCheck;                     % Check keyboard for 'escape' press        
+        if keyIsDown && keyCode(KbName('Escape')) == 1       	% Press Esc for abort
+            EndMovie = 1;
+        end
+    end
+    
+    %===================== Clean up
+    Movie.EndTime = Screen('GetMovieTimeIndex', mov);
+    Screen('CloseMovie', mov);
+    sca;
+    ShowCursor;
+    
+    Frametimes = diff(FrameOnset);
+    meanFrameRate = mean(Frametimes(2:end))*1000;
+    semFrameRate = (std(Frametimes(2:end))*1000)/sqrt(numel(Frametimes(2:end)));
+    fprintf('Frames shown............%.0f\n', numel(Frametimes));
+    fprintf('Mean frame duration.....%.0f ms +/- %.0f ms\n', meanFrameRate, semFrameRate);
+    fprintf('Max frame duration......%.0f ms\n', max(Frametimes)*1000);
+catch
+    sca
+    rethrow(lasterror);
+end

@@ -1,0 +1,358 @@
+function Textures = DrawObject3D(Display, Object, GL)
+
+%=========================== DrawObject3D.m ===============================
+% Loads a 3D object file and renders it in OpenGL. 
+% A PTB window must already be open and
+% its handle should be passed in Dsisplay.win., and the OpenGL commands 
+% "AssertOpenGL" and "InitializeMatlabOpenGL" should have been called
+% first.
+% 
+% EXAMPLE:
+%   AssertOpenGL;                                                 
+%   InitializeMatlabOpenGL;                                       
+%   Display = DisplaySettings(1);
+%   [Display.win, Display.Rect] = Screen('OpenWindow', Display.ScreenID, ...
+%       0,Display.Rect,[],2, Display.Stereomode, Display.MultiSample, Display.Imagingmode);
+%   BackgroundTextures = BackgroundCubes(Display);
+%   for Eye = 1:2
+%         currentbuffer = Screen('SelectStereoDrawBuffer', Display.win, Eye-1);
+%         Screen('DrawTexture', Display.win, BackgroundTextures(Eye));
+%   end    
+%   [VBL FrameOnset] = Screen('Flip', Display.win);
+%   KbWait;
+%   Screen('CloseAll');
+%
+% INPUTS:
+%       Object.Filename     filename including full path of .OBJ or .STL object
+%       Object.Texturename  filename including full path of texture image
+%       Object.Centre       world coordinates of object centre [x y z]
+%       Object.Size         dimension of object major axis (pixels)
+%       Object.Texture   	0 = wire frame; 1 = solid; 2 = custom texture
+%
+% REVISIONS:
+% 27/10/2012 - Created by Aidan Murphy (apm909@bham.ac.uk)
+%     ___  ______  __   __
+%    /   ||  __  \|  \ |  \    APM SUBFUNCTIONS
+%   / /| || |__/ /|   \|   \   Aidan P. Murphy - apm909@bham.ac.uk
+%  / __  ||  ___/ | |\   |\ \  Binocular Vision Lab
+% /_/  |_||_|     |_| \__| \_\ University of Birmingham
+%==========================================================================
+AssertOpenGL;                                                                   % Check OpenGL compatability of installed PTB3
+InitializeMatlabOpenGL;                                                         % Setup Psychtoolbox for OpenGL 3D rendering support 
+% PsychImaging('PrepareConfiguration');
+
+if nargin == 0
+    fprintf('No inputs were provided to %s.m! Running in test mode...\n', mfilename);
+    Screen('Preference', 'SkipSyncTests', 1);
+    Display = DisplaySettings(1);
+%     Display.Imagingmode = kPsychNeedFastBackingStore;
+    Display.Imagingmode = [];
+    Display.Rect = Screen('Rect', Display.ScreenID);
+%     [Display.win, Display.Rect] = PsychImaging('OpenWindow', Display.ScreenID, 0,Display.Rect,[],2, Display.Stereomode, Display.MultiSample, Display.Imagingmode);
+    [Display.win, Display.Rect] = Screen('OpenWindow', Display.ScreenID, 0,Display.Rect,[],2, Display.Stereomode, Display.MultiSample, Display.Imagingmode);
+%     SetAnaglyphStereoParameters('FullColorAnaglyphMode', Display.win);
+%     BackgroundTextures = BackgroundSquares(Display);
+%     Screen('DrawTexture', Display.win, BackgroundTextures(Eye));
+    Object = struct('StartTime',GetSecs);
+    KbName('UnifyKeyNames');
+end
+
+%======================== SET DEFAULT PARAMETERS ==========================
+if ~isfield(Object,'Size'), Object.Size = round(8*Display.Pixels_per_deg(1));end	% set the size of the object's largest dimension (degrees)
+if ~isfield(Object,'DepthRange'), Object.DepthRange = [-0.2 0.1]; end         	% Set far and near depth limits (metres) [-far, near]          
+if ~isfield(Object,'Background'), Object.Background = [0 0 0 255];end         	% Set background color RGBA
+if ~isfield(Object,'Perspective'), Object.Perspective = 1; end                 	% Use perspective projection?
+if ~isfield(Object,'LineWidth'), Object.LineWidth = 2; end                    	% Set line width for wire frame            
+if ~isfield(Object,'Opacity'), Object.FaceOpacity = 0; end                   	% Set object face opacity for solid faces             
+if ~isfield(Object,'Texture'), Object.Texture = 2; end                       	% Set surface type (wire frame/ solid/ textured)
+if ~isfield(Object,'IPD'), Object.IPD = 0.064; end                            	% Default inter-pupillary distance is 0.064 metres
+if numel(Object.Size)>1, Object.Size = Object.Size(1); end
+if numel(Object.Background)<4, Object.Background(4) = 255; end
+if ~isfield(Object, 'UseVertexArray'), Object.UseVertexArray = 1;end            
+if ~isfield(Object,'PosInDepth'),Object.PosInDepth = 0.1*Display.Pixels_per_m; end
+if ~isfield(Object,'AngularVelocity'),Object.AngularVelocity = 90; end
+DegPerFrame = Object.AngularVelocity/Display.RefreshRate;
+CaptureTexture = 0;                                                             % Write OpenGL scene to PTB texture?
+Movie = 0;
+if Movie == 1 && ismac
+    try
+        movie = Screen('CreateMovie', Display.win, '3DObject.mov', Object.Size, Object.Size, Display.RefreshRate);
+    catch
+        rethrow(lasterror);
+    end
+end
+
+if ~isfield(Object,'Filename')                                                  % Default 3D object is a banana!
+    RootDir = mfilename('fullpath');                                            % Find directory where this function is being called from
+    FileDir = fullfile(fileparts(RootDir),'3D rendering');
+%     Object.Filename = 'banana_obj.obj';
+%     Object.TextureName = 'Banana.jpg';
+    Food = 'cucumber';
+    Object.Filename = strcat('Food_OBJ_Triangles\',Food,'.obj');
+    Object.TextureName = 'Food_alternate_maps\cheese_diffuse_no_ao.jpg');
+    Object.Filename = fullfile(FileDir,Object.Filename);
+    Object.TextureName = fullfile(FileDir,Object.TextureName);                  % Specify location of texture image file
+end
+
+%========================= SET VIEW FRUSTUM GEOMETRY ======================
+width = Display.Rect(3);                                                        % Get screen width (pixels)
+height = Display.Rect(4);                                                       % Get screen height (pixels)
+CameraTranslate = Object.IPD/2*Display.Pixels_per_m(1);                       	% Distance to move view point for orthographic projection (pixels)
+CameraDistance = Display.D*Display.Pixels_per_m(1);    
+zNear = 1000;
+zFar = -300;
+zNear = max(abs([round(Object.DepthRange(1)*Display.Pixels_per_m(1)), zNear]));	% Ensure viewing frustum depth accomodates requested object positions
+zFar = -max(abs([round(Object.DepthRange(2)*Display.Pixels_per_m(1)), zFar])); 
+
+%======================= LOAD OBJECT MODEL AND TEXTURE ====================
+if strcmp(Object.Filename(end-2:end),'obj')
+    objobject = LoadOBJFile(Object.Filename);                                   % Load .OBJ file
+    texcoords = objobject{1}.texcoords;                                         % Get texture coordinates   
+    p = objobject{1}.vertices;                                                  % Get vertices
+    t = objobject{1}.faces';                                                    % Get vertices indices for all faces
+    t(t==0) = 1;                                                                % Matlab indices must be non-zero
+    CentreDistFromOrigin = mean(objobject{1}.vertices');                       	% Get x, y and z distance from centre of object to world origin
+    objobject{1}.vertices = p-repmat(CentreDistFromOrigin',[1,numel(p(1,:))]);  % Normalize object centre to world origin
+%     trisurf(t,p(1,:),p(2,:),p(3,:),'facecolor','y');                          % TEST: 3D plot of object to check surface 
+elseif strcmp(Object.Filename(end-2:end),'stl')
+    [p,t,tnorm] = import_stl_fast(Object.Filename, 1);                          % Load .STL file
+    norm = repmat(tnorm, 1, numel(p(:,1)));                                     % Get normal for each vertex
+end
+if ~isempty(dir(Object.TextureName))                                            % If texture image file was located...
+    ObjectTexture = imread(Object.TextureName);                                 % Load texture image
+    tx = permute(ObjectTexture,[3 2 1]);                                        % Permute RGB image to 3xMxN array
+    tx = tx(:,:,end:-1:1);
+%  	TextureScale = 256/size(tx,2); 
+%  	tx = imresize(tx, TextureScale);                                            % Resize texture
+%     tx = uint8(tx);                                                             % Convert texture array to unit8
+else
+    fprintf('Texture file %s not found!\nProceeding without texture mapping.\n', Object.TextureName);
+    Object.Texture = 1;                                                         % Revert to untextured object
+end
+
+%========================= BEGIN RENDERING LOOP ===========================
+Screen('BlendFunction', Display.win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);     % Enable blending for alpha transparency
+EndLoop = 0;Frame = 1; 
+while EndLoop == 0
+    Object.BeginRender = GetSecs;
+    for Eye = 1:2
+    %     BackgroundTextures{Eye} = Screen('MakeTexture', Display.win, repmat(Cube.Background(1),Display.Rect([4,3])));
+        currentbuffer = Screen('SelectStereoDrawBuffer', Display.win, Eye-1);           % Select buffer for current eye
+        Screen('BeginOpenGL', Display.win);                                             % Prepare OpenGL to render
+        glClear(mor(GL.DEPTH_BUFFER_BIT, GL.STENCIL_BUFFER_BIT));                       % Clear buffers
+        if Frame == 1
+            glEnable(GL.BLEND);
+            glBlendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);                          % Enable alpha blending for transparent occluding surfaces
+            glViewport(0, 0, width, height);                                            % Specify all OpenGL object sizes in pixels
+            glEnable(GL.DEPTH_TEST);                                                    % Enable proper occlusion handling via depth tests
+            if Object.Texture > 0
+                glEnable(GL.LIGHTING);                                                  % Enable local lighting (Phong model with Gouraud shading)
+            end
+            glEnable(GL.LIGHT0);                                                        % Enable the first light source
+            glLightModelfv(GL.LIGHT_MODEL_TWO_SIDE,GL.TRUE);                            % Enable two-sided lighting
+        end
+    %     %======================== LOAD CUBE TEXTURE ===========================
+    %     if Cube.Texture >= 2 && Eye == 1
+    %         glEnable(GL.TEXTURE_2D);                                                % Enable texture mapping
+    %         texname(1) = glGenTextures(1);                                          % Create a new texture
+    %         Root = mfilename('fullpath');                                           % Find directory where this function is being called from
+    %         TextureFile = fullfile(fileparts(Root),'3D rendering',Cube.TextureName);% Specify location of texture image file
+    %         if ~isempty(dir(TextureFile))                                           % If texture image file was located...
+    %             CubeTexture = imread(TextureFile);                                  % Load texture image
+    %             if size(CubeTexture,1) ~= size(CubeTexture,2)                       % If texture image is not square...
+    %             	Cube.Texture = 1;                                            	% Revert to untextured solid cubes
+    %             end
+    %             if size(CubeTexture,1) ~= 256                                       % resize texture image
+    %                 TextureScale = 256/size(CubeTexture,1);
+    %                 CubeTexture = imresize(CubeTexture, TextureScale);
+    %             end
+    %             tx{1} = permute(CubeTexture,[3 2 1]);                               % Permute RGB image to 3xMxN array
+    %         else
+    %             Cube.Texture = 1;                                                   % Revert to untextured cubes
+    %         end
+    %         if Cube.Texture >= 2
+    %             glBindTexture(GL.TEXTURE_2D,texname(1));                                      	% Enable i'th texture by binding it:
+    %             glTexImage2D(GL.TEXTURE_2D,0,GL.RGB,256,256,0,GL.RGB,GL.UNSIGNED_BYTE,tx{1});  	% Assign image in matrix 'tx' to i'th texture:
+    %             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_WRAP_S,GL.REPEAT);                    % Setup texture wrapping behaviour:
+    %             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_WRAP_T,GL.REPEAT);
+    %             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_MAG_FILTER,GL.NEAREST);               % Setup filtering for the textures
+    %             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_MIN_FILTER,GL.NEAREST);
+    %             glTexEnvfv(GL.TEXTURE_ENV,GL.TEXTURE_ENV_MODE,GL.MODULATE);                     % Choose texture application function to modulate light reflection properties of the the cubes face
+    %         end
+    %     end
+
+            %======================= SETUP PROJECTION MATRIX ======================
+            glMatrixMode(GL.PROJECTION);            
+            glLoadIdentity;     
+            if Object.Perspective == 0                                                % Set orthographic projection
+                glOrtho(0-(width/2), 0+(width/2), 0-(height/2), 0+(height/2), -500, 1000);  
+            elseif Object.Perspective == 1                                            % Set perspective projection
+                moglStereoProjection(0-(width/2), 0+(height/2), 0+(width/2), 0-(height/2), zNear, zFar, 0, CameraDistance, CameraTranslate*round(Eye-0.5));
+            end
+        
+            %======================= SETUP MODELVIEW MATRIX =======================
+            glMatrixMode(GL.MODELVIEW);         
+            glLoadIdentity;
+            glLightfv(GL.LIGHT0,GL.POSITION,[-1 2 3 0]*100);                   	% Point lightsource is at position (x,y,z) == (-1,2,3)
+            glLightfv(GL.LIGHT0,GL.AMBIENT, [0.2 0.2 0.2 1 ]);               	% Ambient light
+            glLightfv(GL.LIGHT0,GL.DIFFUSE, [1 1 1 1 ]);                     	% Emits white (1,1,1,1) diffuse light
+            glLightfv(GL.LIGHT0,GL.SPECULAR, [1 1 1 1 ]);                     	% Emits white (1,1,1,1) specular light
+            glMaterialfv(GL.FRONT_AND_BACK,GL.AMBIENT, [0.2 0.2 0.2 1]);      	% Change the color of the following objects
+            glMaterialfv(GL.FRONT_AND_BACK,GL.DIFFUSE, [1.0 1.0 1.0 1]);        % Or try [ 1.0 0.0 0.0 1 ]);
+            glMaterialfv(GL.FRONT_AND_BACK,GL.SHININESS, 30);                   % Add specular reflections
+            glClearColor(Object.Background(1),Object.Background(2),Object.Background(3),Object.Background(4)); 	% Set background clear color
+%         	glColorMaterial(GL.FRONT_AND_BACK, GL.EMISSION);                    % hand control of lighting color to glColorMaterial
+%             glEnable(GL.COLOR_MATERIAL);
+%             glColorMaterial(GL.FRONT_AND_BACK, GL.AMBIENT_AND_DIFFUSE);
+
+            if Object.Perspective == 0
+                gluLookAt(CameraTranslate*round(Eye-0.5),0,CameraDistance,0,0,0,0,1,0);     % Camera fixates at the origin (0,0,0) from either eye view
+            end
+            
+        if Frame == 1
+            %======================== LOAD MODEL TEXTURE ======================
+            texname = glGenTextures(1);                                                     % Create a new texture
+            glBindTexture(GL.TEXTURE_2D,texname);                                           % Enable texture by binding it
+            glTexImage2D(GL.TEXTURE_2D,0,GL.RGB,size(tx,2),size(tx,3),0,GL.RGB,GL.UNSIGNED_BYTE,tx);      % Assign image in matrix 'tx' to i'th texture:
+%             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_WRAP_S,GL.REPEAT);                    % Setup texture wrapping behaviour:
+%             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_WRAP_T,GL.REPEAT);
+            glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_WRAP_S,GL.CLAMP_TO_EDGE);             % Setup texture wrapping behaviour:
+            glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_WRAP_T,GL.CLAMP_TO_EDGE);        
+            glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_MAG_FILTER,GL.LINEAR);                % Setup filtering for the textures
+            glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_MIN_FILTER,GL.LINEAR);
+%             glTexParameterfv(GL.TEXTURE_2D,GL.TEXTURE_MIN_FILTER,GL.LINEAR_MIPMAP_NEAREST );
+            glTexEnvfv(GL.TEXTURE_ENV,GL.TEXTURE_ENV_MODE,GL.MODULATE);                     % Choose texture application function to modulate light reflection properties of the the Objects face
+%             glGenerateMipmapEXT(GL.TEXTURE_2D);                                             
+            glEnable(GL.TEXTURE_2D);
+            
+            %======================= SETUP VERTEX ARRAYS ======================
+            vertices = reshape(objobject{1}.vertices, [1,numel(objobject{1}.vertices)]);
+            normals = reshape(objobject{1}.normals, [1,numel(objobject{1}.normals)]);
+            texcoords = reshape(objobject{1}.texcoords, [1,numel(objobject{1}.texcoords)]);
+            glNormalPointer(GL.DOUBLE, 0, normals);
+            glEnableClientState(GL.NORMAL_ARRAY);
+            glVertexPointer(3, GL.DOUBLE, 0, vertices);
+            glEnableClientState(GL.VERTEX_ARRAY);
+            glTexCoordPointer(3, GL.DOUBLE, 0, texcoords);
+            glEnableClientState(GL.TEXTURE_COORD_ARRAY);
+%             glColorPointer(3, GL.FLOAT, 0, colors);
+%             glEnableClientState(GL.COLOR_ARRAY);
+
+%             %===================== COMPILE DISPLAY LIST FOR WORLD ORIGIN MARKER
+%             glNewList('Origin', GL.COMPILE);
+%             radius = 10;
+%             glPushMatrix();
+%             	glTranslatef(0, radius, 0);                                 % Translate to sit on y = 0 plane
+%                 glutSolidSphere(radius, 100, 100);                          % Draw sphere
+%             glPopMatrix();
+%             glEndList();  
+%             glCallList('Origin');  
+
+            %===================== COMPILE DISPLAY LIST FOR OBJECT ========
+            glNewList('Object', GL.COMPILE); 
+            glPushMatrix();
+%                 glTranslatef(CentreDistFromOrigin(1),CentreDistFromOrigin(2),CentreDistFromOrigin(3));
+                glRotatef(75, 1,0,0);                                           % Rotate object to desired 'upright' position
+                Scale = 1/max(max(abs(objobject{1}.vertices)))*Object.Size;                    
+                glScalef(Scale,Scale,Scale);                                    % Scale object to desired size
+                glEnable(GL.NORMALIZE);                                         % Normalize vertex normal lengths
+                if numel(t(1,:)) == 3
+%                     glDrawElements(GL.TRIANGLES, 3, GL.UNSIGNED_INT, t);
+                    glBegin(GL.TRIANGLES);
+                    for n = 1:numel(t(:,1))
+                        if Object.UseVertexArray == 1
+                            glArrayElement(t(n,1));
+                            glArrayElement(t(n,2));
+                            glArrayElement(t(n,3));
+                        else
+                            glTexCoord2fv(texcoords(t(n,1)));
+                            glNormal3fv(norm(t(n,1),:));
+                            glVertex3dv(p(:,t(n,1)));
+                            glTexCoord2fv(texcoords(t(n,2)));
+                            glNormal3fv(norm(t(n,2),:));
+                            glVertex3dv(p(:,t(n,2)));
+                            glTexCoord2fv(texcoords(t(n,3)));
+                            glNormal3fv(norm(t(n,3),:));
+                            glVertex3dv(p(:,t(n,3)));
+                        end
+                    end
+                    glEnd;
+                elseif numel(t(1,:)) == 4
+                    glBegin(GL.QUADS);
+                    for n = 1:1:numel(t(:,1))
+                        if Object.UseVertexArray == 1
+                            glArrayElement(t(n,1));
+                            glArrayElement(t(n,2));
+                            glArrayElement(t(n,3));
+                            glArrayElement(t(n,4));
+                        else
+                            glNormal3fv(norm(t(n,1),:));
+                            glVertex3dv(p(:,t(n,1)));
+                            glNormal3fv(norm(t(n,2),:));
+                            glVertex3dv(p(:,t(n,2)));
+                            glNormal3fv(norm(t(n,3),:));
+                            glVertex3dv(p(:,t(n,3)));
+                            glNormal3fv(norm(t(n,4),:));
+                            glVertex3dv(p(:,t(n,4)));
+                        end
+                    end
+                    glEnd;
+                else
+                    fprintf('Error drawing 3D object: faces must be triangles or quads!\n');
+                end
+            glPopMatrix();
+            glEndList();  
+            
+            
+%          	Cube = struct('CallTime',GetSecs);                                                  % Generate background cubes
+%             [BackgroundTextures, GL] = BackgroundCubes(Display, Cube, GL);
+        end
+
+%         glCallList('Cube');
+        glTranslatef(0,0,Object.PosInDepth);                                                    % Set object position in depth
+        glRotatef(DegPerFrame*Frame, 0,1,0);                                                    % Rotate object
+     	glCallList('Object');                                                                   % Call object display list
+        Screen('EndOpenGL', Display.win);                                                       % Finish OpenGL rendering
+        if CaptureTexture == 1
+            ObjectTextures{Eye} = Screen('GetImage', Display.win, Display.Rect,'backBuffer');	% Capture texture as image
+            Textures(Eye) = Screen('MakeTexture', Display.win, ObjectTextures{Eye});         	% Convert image to PTB texture
+            Screen('FillRect', Display.win, Object.Background(1));                            	% Clear window buffer
+        end
+    end
+    Screen('DrawingFinished', Display.win);
+    [VBL FrameOnset] = Screen('Flip', Display.win);
+    if Movie == 1
+       	MovieFrames{Frame} = Screen('GetImage', Display.win, Display.Rect);         % Add frame to movie
+        if ismac
+            Screen('AddFrameToMovie', MovieFrames{Frame});
+        end
+        if Frame == round(360/DegPerFrame)
+            EndLoop = 1;
+        end
+    end
+    [keyIsDown,secs,keyCode] = KbCheck;                                             % Check keyboard for 'escape' press        
+    if keyIsDown && keyCode(KbName('Escape')) == 1                                  % Press Esc for abort
+        EndLoop = 1;
+    end
+    fprintf('Time to render frame %d = %.0f ms\n', Frame,(FrameOnset-Object.BeginRender)*1000);
+    Frame = Frame+1;
+end
+Screen('CloseAll');
+
+%============================== ENCODE MOVIE ==========================
+if Movie == 1
+    if ismac
+        Screen('FinalizeMovie', movie);
+    else
+        movieFile = 'StereoBanana.avi';
+        for Frame = 1:numel(MovieFrames)
+            MatlabMovieFrames(Frame) = im2frame(MovieFrames{Frame});
+        end
+        if ismac
+            movie2avi(MatlabMovieFrames, movieFile, 'compression', 'none', 'fps', 60);
+        else
+            movie2avi(MatlabMovieFrames, movieFile, 'compression', 'Cinepak', 'fps', 60);
+        end
+    end
+    clear MatlabMovieFrames
+end

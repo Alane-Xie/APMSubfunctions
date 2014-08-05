@@ -1,0 +1,236 @@
+function BackgroundTextures = BackgroundCubes(Display, Stim, Cube)
+
+%======================== BackgroundCubes.m =============================
+% Creates a stereoscopic background texture the size of the screen (specified 
+% by input structure 'Display') with 3D cubes randomly located within a 
+% volume that projects onto the outer border.This 3D texture aids stable vergence 
+% during binocular viewing. 'Stim.Window' specifies the rectangle in which 
+% stimuli will be presented.
+%
+% INPUTS:
+%       Cube.Density      proportion of the texture area to fill with squares
+%       Cube.InnerBorder  size of border between surrounding cubes and stimulus (pixels)
+%       Cube.Size         dimensions of each cube (pixels)
+%       Cube.Texture      0 = wire frame; 1 = solid; 2 = textured
+%
+% REVISIONS:
+% 25/10/2012 - Created by Aidan Murphy (apm909@bham.ac.uk)
+%     ___  ______  __   __
+%    /   ||  __  \|  \ |  \    APM SUBFUNCTIONS
+%   / /| || |__/ /|   \|   \   Aidan P. Murphy - apm909@bham.ac.uk
+%  / __  ||  ___/ | |\   |\ \  Binocular Vision Lab
+% /_/  |_||_|     |_| \__| \_\ University of Birmingham
+%==========================================================================
+AssertOpenGL;                         	% Check OpenGL compatability of installed PTB3
+InitializeMatlabOpenGL;                 % Setup Psychtoolbox for OpenGL 3D rendering support 
+
+
+Display = DisplaySettings(1); %<<<< REMOVE
+if nargin < 3                                                 % Use the following as defaults:
+    Cube.Density = 0.7;                                       % set the density of cubes in the border
+    Cube.InnerBorder = 3*Display.Pixels_per_deg;              % set the size of the inner border between the surrounding cubes and the stimulus (degrees)
+    Cube.Size = 1*Display.Pixels_per_deg;                     % set the size of the surrounding cubes (degrees^2)
+    Cube.Filled = 0;
+end
+
+Cube.Size = Cube.Size(1);
+Cube.Background = [0 0 0 255];      % Set background color RGBA
+Cube.Perspective = 1;             	% Use perspective projection?
+Cube.Lighting = 1;                  % Use lighting model
+Cube.LineWidth = 2;                 
+Cube.FaceOpacity = 0;               
+Stim.Window = [0 0 400 400];
+
+width = Display.Rect(3);                                                % Get screen width (pixels)
+height = Display.Rect(4);                                               % Get screen height (pixels)
+CameraTranslate = 0.064/2;
+CameraDistance = Display.D;
+
+DotsPerFace = 20;
+DotDiameter = 1;
+NrOfDots = DotsPerFace*6;
+DotPos = (rand(NrOfDots, 2)*Cube.Size)-(Cube.Size/2);
+
+%=========================== GENERATE CUBE POSITIONS ======================
+CubeRadius = sqrt(Cube.Size^2)
+OuterBounds = 
+
+% NoCubeRect = ([0 0 Cube.InnerBorder]*2) + Stim.Window;      % Size of rectangle with no border texture in
+% ZeroRect = CenterRect(NoCubeRect, Display.Rect);         	% Centred position of rectange with no border texture in
+% Cubes = 1;
+% for x = 1:numel(CubeCornersX)
+%     for y = 1:numel(CubeCornersY)
+%         if ~IsInRect(CubeCornersX(x),CubeCornersY(y),ZeroRect)
+%           	BorderRectCorners(:,Cubes) = [CubeCornersX(x); CubeCornersY(y); CubeCornersX(x)+Cube.Size; CubeCornersY(y)+Cube.Size];
+%             Cubes = Cubes+1;
+%         end
+%     end
+% end
+
+Cubes.Number = 50;
+xMax = Display.Rect(3);
+yMax = Display.Rect(4);
+zMax = 1000;
+
+xPos = randi(xMax, [1, Cubes.Number]); 
+yPos = randi(yMax, [1, Cubes.Number]); 
+zPos = randi(zMax, [1, Cubes.Number]); 
+xPos = xPos-xMax/2;
+yPos = yPos-yMax/2;
+zPos = zPos-zMax/2;
+xRot = randi(90, [1, Cubes.Number]); 
+zRot = randi(90, [1, Cubes.Number]); 
+
+%********************** FOR TESTING ONLY ************************
+% Display = DisplaySettings(1);
+Display.MultiSample = 8;
+Crop = 0;
+Screen('Preference', 'VisualDebugLevel', 1);                        % Make initial screen black instead of white
+[Display.win, Display.Rect] = Screen('OpenWindow', Display.ScreenID, Cube.Background(1),Display.Rect-Crop,[],[], Display.Stereomode, Display.MultiSample, Display.Imagingmode);
+%****************************************************************
+
+IPD = 0.064;
+
+Screen('BlendFunction', Display.win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+%========================= BEGIN RENDERING LOOP ===========================
+for Eye = 1:2
+    currentbuffer = Screen('SelectStereoDrawBuffer', Display.win, Eye-1); 
+    Screen('BeginOpenGL', Display.win);                                             % Prepare OpenGL to render
+    
+    glClear(mor(GL.DEPTH_BUFFER_BIT, GL.STENCIL_BUFFER_BIT));               % Clear buffers
+    glBlendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);                      % Enable alpha blending for transparent occluding surfaces
+    glViewport(0, 0, width, height);                                        % Specify all OpenGL object sizes in pixels
+    glEnable(GL.DEPTH_TEST);                                                % Enable proper occlusion handling via depth tests
+    glEnable(GL.TEXTURE_2D);                                                % Enable texture mapping
+    
+    %======================= SETUP PROJECTION MATRIX ======================
+    glMatrixMode(GL.PROJECTION);            
+    glLoadIdentity;     
+    if Cube.Perspective == 0
+        glOrtho(0-(width/2), 0+(width/2), 0-(height/2), 0+(height/2), -500, 1000);  % Set orthographic projection
+    elseif Cube.Perspective == 1
+        moglStereoProjection(0-(width/2), 0-(height/2), 0+(width/2), 0+(height/2), -300, 1000, 0, Display.D*Display.Pixels_per_m, (IPD/2)*Display.Pixels_per_m*round(Eye-0.5));
+    end
+
+    %============== SETUP MODELVIEW MATRIX CAMERA POSITION ===============
+    glMatrixMode(GL.MODELVIEW);         
+    glLoadIdentity;
+    if Cube.Lighting == 1
+        glLightfv(GL.LIGHT0,GL.POSITION,[-1 2 3 0 ]);                	% Point lightsource is at position (x,y,z) == (-1,2,3)
+        glMaterialfv(GL.FRONT_AND_BACK,GL.AMBIENT, [1.0 0.0 0.0 1]); 	% Change the color of the following objects
+        glMaterialfv(GL.FRONT_AND_BACK,GL.DIFFUSE, [1.0 0.0 0.0 1]);    % Or try [ 1.0 0.0 0.0 1 ]);
+        glMaterialfv(GL.FRONT_AND_BACK,GL.SHININESS,27.8);
+    end
+    glClearColor(Cube.Background(1),Cube.Background(2),Cube.Background(3),Cube.Background(4)); 	% Set background clear color
+
+    glLightfv(GL.LIGHT0,GL.POSITION,[ 1 2 3 0 ]);           % Point lightsource at (1,2,3)...
+    glLightfv(GL.LIGHT0,GL.DIFFUSE, [ 1 1 1 1 ]);           % Emits white (1,1,1,1) diffuse light:
+    glLightfv(GL.LIGHT0,GL.AMBIENT, [ .1 .1 .1 1 ]);        % Add ambient light
+    
+
+    if Cube.Perspective == 0
+        gluLookAt(CameraTranslate*round(Eye-0.5),0,CameraDistance,0,0,0,0,1,0);     % Camera fixates at the origin (0,0,0) from either eye view
+    end
+
+    
+    %============= COMPILE LIST TO DRAW CUBE AND SURFACE FEATURES =========
+    for c = 1:numel(xPos)
+        glNewList('Cube', GL.COMPILE);         
+
+            %--------- Perform static translations to cube
+            glPushMatrix();
+                glTranslatef(xPos(c), yPos(c), zPos(c));         % Set vertical offset of cube presentation
+                glRotatef(zRot(c), 0,0,1);                 % Rotate 25 degrees around z-axis
+                glRotatef(xRot(c), 1,0,0);                 % then 25 degrees around the x-axis
+                glLineWidth(Cube.LineWidth);            % Set the cube line width
+                glColor3f(1,1,1);                       % Set cube line colour     
+                glutWireCube(Cube.Size);                 % draw wire cube
+
+                %------------ Fill in cube faces
+                if Cube.FaceOpacity > 0
+                    if Cube.FaceOpacity == 1
+                        glColor3f(1,0,1);                       % Set cube face colour
+                    elseif Cube.FaceOpacity < 1
+                        glEnable(GL.BLEND);                     % Enable blending in RGBA
+                        glColor4f(1,1,0, Cube.FaceOpacity);     % Set cube face colour
+                    end
+                    glBegin(GL.QUADS);                          % Draw solid cube faces
+                        glVertex3f(-Cube.Size/2, Cube.Size/2, -Cube.Size/2);     % Corner 1  
+                        glVertex3f(Cube.Size/2, Cube.Size/2, -Cube.Size/2);      % Corner 2  
+                        glVertex3f(Cube.Size/2, -Cube.Size/2, -Cube.Size/2);     % Corner 3
+                        glVertex3f(-Cube.Size/2, -Cube.Size/2, -Cube.Size/2);    % Corner 4
+                    glEnd();
+                end
+
+                %---------- Draw dots on cube surface
+                glColor3f(1,1,1);               % Set dot colour
+                glPointSize(DotDiameter);
+                glBegin(GL.POINTS);             % Draw random dot points on each face
+                    n=1;
+                    while n<= NrOfDots    
+                        if n<= DotsPerFace
+                            glVertex3f(Cube.Size/2, DotPos(n,1), DotPos(n,2));
+                        elseif n<= DotsPerFace*2
+                            glVertex3f(-Cube.Size/2, DotPos(n,1), DotPos(n,2));
+                        elseif n<= DotsPerFace*3
+                             glVertex3f(DotPos(n,1), DotPos(n,2), -Cube.Size/2);
+                        elseif n<= DotsPerFace*4
+                             glVertex3f(DotPos(n,1), DotPos(n,2), Cube.Size/2);
+                        elseif n<= DotsPerFace*5
+                             glVertex3f(DotPos(n,1), -Cube.Size/2, DotPos(n,2));
+                        elseif n<= DotsPerFace*6
+                             glVertex3f(DotPos(n,1), Cube.Size/2, DotPos(n,2));
+                        end
+                        n=n+1;
+                    end
+                glEnd();
+                
+                
+            glPopMatrix();
+        glEndList();
+        glCallList('Cube');                                    	% Draw current eye view of current cube
+    end
+   	Screen('EndOpenGL', Display.win);                                 	% Finish OpenGL rendering
+end
+%============ PRESENT NEXT FRAME AND CHECK FOR SUBJECT RESPONSE ===
+Screen('DrawingFinished', Display.win);
+Screen('Flip', Display.win);                                            % Flip to both screens at next retrace
+KbWait;
+sca;
+
+
+function DrawCubeFace(i, tx)
+
+%==================== Subroutine for drawing cube faces ===================
+
+global GL;      % Access OpenGL constants
+
+% Vector v maps indices to 3D positions of the corners of a face:
+v=[ 0 0 0 ; 1 0 0 ; 1 1 0 ; 0 1 0 ; 0 0 1 ; 1 0 1 ; 1 1 1 ; 0 1 1 ]'-0.5;
+% Compute surface normal vector. Needed for proper lighting calculation:
+n=cross(v(:,i(2))-v(:,i(1)),v(:,i(3))-v(:,i(2)));
+
+% Bind (Select) texture 'tx' for drawing:
+glBindTexture(GL.TEXTURE_2D,tx);
+% Begin drawing of a new polygon:
+glBegin(GL.POLYGON);
+
+% Assign n as normal vector for this polygons surface normal:
+glNormal3dv(n);
+
+
+glTexCoord2dv([ 0 0 ]); % Define vertex 1 by assigning a texture coordinate and a 3D position:
+glVertex3dv(v(:,i(1)));
+
+glTexCoord2dv([ 1 0 ]); % Define vertex 2 by assigning a texture coordinate and a 3D position:
+glVertex3dv(v(:,i(2)));
+
+glTexCoord2dv([ 1 1 ]); % Define vertex 3 by assigning a texture coordinate and a 3D position:
+glVertex3dv(v(:,i(3)));
+
+glTexCoord2dv([ 0 1 ]); % Define vertex 4 by assigning a texture coordinate and a 3D position:
+glVertex3dv(v(:,i(4)));
+
+glEnd;
+return

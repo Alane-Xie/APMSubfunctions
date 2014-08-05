@@ -1,0 +1,443 @@
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/Repository/!svn/ver/1885/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox
+END
+plotgroupdata.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1203/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/plotgroupdata.m
+END
+GetCondition.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetCondition.m
+END
+Container.fig
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/Container.fig
+END
+GetDataFiles.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetDataFiles.m
+END
+PlotVelocity.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/PlotVelocity.m
+END
+SelectRuns.fig
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SelectRuns.fig
+END
+UseGui.m
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/Repository/!svn/ver/1132/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/UseGui.m
+END
+saccparams.mat
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/saccparams.mat
+END
+ProcessSaccades.m
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/Repository/!svn/ver/1880/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ProcessSaccades.m
+END
+etatcrs.m
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/Repository/!svn/ver/1745/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/etatcrs.m
+END
+CalcVelocityData.m
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/CalcVelocityData.m
+END
+CheckSaccParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/CheckSaccParams.m
+END
+ConfigSaccadeParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ConfigSaccadeParams.m
+END
+CursorWindowButtonMotionFcn.m
+K 25
+svn:wc:ra_dav:version-url
+V 123
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/CursorWindowButtonMotionFcn.m
+END
+guidata.m
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/guidata.m
+END
+ConfigCRSParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ConfigCRSParams.m
+END
+processGroupData.m
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1745/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/processGroupData.m
+END
+SetConditionNames.m
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SetConditionNames.m
+END
+SelectRuns.m
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SelectRuns.m
+END
+ConfigBlinkParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ConfigBlinkParams.m
+END
+GetFixParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetFixParams.m
+END
+MainMenuCRS.fig
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1745/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/MainMenuCRS.fig
+END
+uisubgui.m
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/uisubgui.m
+END
+GetCondition.fig
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetCondition.fig
+END
+DeleteCursor.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/DeleteCursor.m
+END
+plotSaccSequence.m
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/plotSaccSequence.m
+END
+SelectResults.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SelectResults.m
+END
+ProcessFixations.m
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ProcessFixations.m
+END
+SetupAnalysis.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1132/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SetupAnalysis.m
+END
+PlotSaccades.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1203/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/PlotSaccades.m
+END
+GetDataFiles.fig
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetDataFiles.fig
+END
+ProcessEyePosition.m
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/Repository/!svn/ver/1745/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ProcessEyePosition.m
+END
+NameConditions.m
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/NameConditions.m
+END
+HandleButtons.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/HandleButtons.m
+END
+ProcessCRSData.m
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ProcessCRSData.m
+END
+MainMenuCRS.m
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1885/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/MainMenuCRS.m
+END
+Notes for running the CRS Eye Tracking Analysis Toolkit.doc
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/Repository/!svn/ver/1161/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/Notes%20for%20running%20the%20CRS%20Eye%20Tracking%20Analysis%20Toolkit.doc
+END
+CursorDemo.m
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/CursorDemo.m
+END
+getLimitParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1747/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/getLimitParams.m
+END
+processCRSfile.m
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/processCRSfile.m
+END
+GetSaccadeParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetSaccadeParams.m
+END
+plotAmpDur.m
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/plotAmpDur.m
+END
+blinkparams.mat
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/blinkparams.mat
+END
+plotvoltage.m
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/plotvoltage.m
+END
+PlotFixations.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1203/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/PlotFixations.m
+END
+GetBlinkParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetBlinkParams.m
+END
+SelectRun.m
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SelectRun.m
+END
+FindFixations.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/FindFixations.m
+END
+GetCursorLocation.m
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetCursorLocation.m
+END
+limitparams.mat
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1747/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/limitparams.mat
+END
+countEvents.m
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/countEvents.m
+END
+fixparams.mat
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/fixparams.mat
+END
+Container.m
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/Container.m
+END
+SetCursorLocation.m
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SetCursorLocation.m
+END
+NameConditions.fig
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/NameConditions.fig
+END
+PlotMeanEyePositions.m
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svn/Repository/!svn/ver/1132/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/PlotMeanEyePositions.m
+END
+getCRSParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/getCRSParams.m
+END
+CreateCursor.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/CreateCursor.m
+END
+PlotPosition.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/PlotPosition.m
+END
+ProcessEvents.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ProcessEvents.m
+END
+FindSaccades.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/FindSaccades.m
+END
+SelectRunsToAnalyse.m
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SelectRunsToAnalyse.m
+END
+plotSequence.m
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/plotSequence.m
+END
+ConfigLimitParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Repository/!svn/ver/1747/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ConfigLimitParams.m
+END
+GetDesignFile.m
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetDesignFile.m
+END
+UseGui.fig
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/Repository/!svn/ver/1112/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/UseGui.fig
+END
+SelectRun.fig
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/SelectRun.fig
+END
+assignConditions.m
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/Repository/!svn/ver/1112/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/assignConditions.m
+END
+crsparams.mat
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/crsparams.mat
+END
+ConfigFixParams.m
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/ConfigFixParams.m
+END
+TruncateOnStimLength.m
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svn/Repository/!svn/ver/1870/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/TruncateOnStimLength.m
+END
+GetCRSDataFile.m
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/GetCRSDataFile.m
+END
+dodriftcorrection.m
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Repository/!svn/ver/1110/Root/Matthew/Projects/CRS%20Eye%20Tracking%20Analysis%20Toolbox/dodriftcorrection.m
+END

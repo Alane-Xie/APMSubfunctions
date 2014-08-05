@@ -1,0 +1,45 @@
+function [GratingTexture] = GenerateSineGrating(Grating, Display)
+
+%========================== GenerateSineGrating.m ===========================
+% Returns a PTB texture with varying alpha values that can be drawn over 
+% stimuli to give the appearance of a central circular aperture.
+%
+% INPUTS:
+%       Grating.Dim:            Dimensions [w, h] (pixels)
+%       Grating.CyclesPerDeg:   Number of cycles per degree
+%       Grating.
+%       Grating.     
+%
+% REVISIONS:
+% 24/10/2012 - Created by Aidan Murphy (apm909@bham.ac.uk).....IN PROGRESS
+%     ___  ______  __   __
+%    /   ||  __  \|  \ |  \    APM SUBFUNCTIONS
+%   / /| || |__/ /|   \|   \   Aidan P. Murphy - apm909@bham.ac.uk
+%  / __  ||  ___/ | |\   |\ \  Binocular Vision Lab
+% /_/  |_||_|     |_| \__| \_\ University of Birmingham
+%==========================================================================
+
+Grating.CyclesPerDeg = 0.5;                                     % Set the number of grating cycles per degree
+
+f = 1/((1/Grating.CyclesPerDeg)*Display.Pixels_per_deg(1));     % Calculate grating cycles per pixel    
+p = ceil(1/f);                                       	% Calculate pixels/cycle, rounded up
+fr = f*2*pi;                                        	% Calculate frequency (radians)
+visiblesize = 2*WindowCentre(1)+1;                       % 
+visible2size = visiblesize/2;
+texsize = WindowCentre(1);
+
+%=========== Calculate grating motion parameters    
+ifi = Screen('GetFlipInterval', Display.win);           % Query duration of one monitor refresh interval
+waitframes = 1;                                         % 1 = Redraw every monitor refresh
+cyclespersecond = 4;
+%     cyclespersecond = TextureSpeed/Display.Pixels_per_deg/CyclesPerDeg;
+waitduration = waitframes * ifi;                        % Translate frames into seconds for screen update interval
+shiftperframe= cyclespersecond * p * waitduration;      % Calculate grating displacement in 'pixels per frame', for given waitduration
+NrFrames = round((1/cyclespersecond)/ifi);              % Calculate number of frames for a drift of 1 cycle to occur
+
+%=========== Create single row texture
+[x,y] = meshgrid(-texsize:texsize + p, 1);
+grating = 128 + 127*cos(fr*x);
+grating = repmat(grating, texsize*2, 1);
+TextureR = Screen('MakeTexture', Display.win, grating);
+TextureL = TextureR;
